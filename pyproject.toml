@@ -8,10 +8,8 @@ select = [
 ]
 line-length = 100
 exclude = [
-    "build",
     "examples",
     "doc",
-    "cvxpy/cvxcore/*",
     "*__init__.py"
 ]
 # The minimum Python version that should be supported
@@ -34,7 +32,7 @@ dependencies = [
     "torch",
 ]
 requires-python = ">=3.9"
-
+dynamic = ["version"]
 
 [project.readme]
 file = "README.md"

@@ -1,15 +1,7 @@
 from cvxpy.expressions.expression import Expression
 import torch
 
-def tensor_reshape_fortran(value: torch.Tensor, shape: tuple) -> torch.Tensor:
-    """This function reshapes a tensor in Fortran order (similar to numpy.reshape with order="F").
-    This functionality is not included in Pytorch."""
-    # reverse_shape = list(shape)
-    # reverse_shape.reverse() #reverse a list in place
-    # return torch.reshape(value.reshape(reverse_shape).t(), shape=shape)
-    # A more compact solution based on
-    # https://stackoverflow.com/questions/64433896/pytorch-equivalent-of-numpy-reshape-function.
-    return torch.reshape(value.T, shape[::-1]).T
+from cvxtorch.utils.torch_utils import tensor_reshape_fortran
 
 def torch_numeric(expr: Expression, values: list[torch.Tensor]) -> torch.Tensor:
     if expr.order == "F":

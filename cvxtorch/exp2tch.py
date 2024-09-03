@@ -104,8 +104,7 @@ import cvxtorch.torch_numerics.elementwise.power as power_tch
 import cvxtorch.torch_numerics.elementwise.xexp as xexp_tch
 
 
-#TODO: Implement this static dictionary that maps EXPR types to the correct torch numeric.
-EXPR2TORCH_NUMERIC = {
+EXPR2TORCH = {
     cummax: cummax_tch.torch_numeric,
     dist_ratio: dist_ratio_tch.torch_numeric,
     dotsort: dotsort_tch.torch_numeric,

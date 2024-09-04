@@ -28,9 +28,9 @@ class TorchExpression():
     def vars_dict(self):
         return self._vars_dict
 
-    def __init__(self, expr: Expression, provided_vars_list:list = [], implemented_only: bool=True):
+    def __init__(self, expr: Expression, provided_vars_list:list = [], implemented_only: bool=True, dtype: torch.dtype = torch.float64):
         self.implemented_only = implemented_only
-        self._tch_exp, self._vars_dict = self._gen_torch_exp(expr=expr, provided_vars_list=provided_vars_list)
+        self._tch_exp, self._vars_dict = self._gen_torch_exp(expr=expr, provided_vars_list=provided_vars_list, dtype=dtype)
 
     #TODO: Add docstring
     def _gen_torch_exp(self, expr, provided_vars_list: list = [], dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:

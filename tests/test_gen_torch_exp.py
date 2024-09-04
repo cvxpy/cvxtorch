@@ -112,8 +112,6 @@ class TestGenTorchExp(unittest.TestCase):
         self.assertTrue((test6==-n*torch.ones((m,m))).all())
         self.assertTrue((test7==n*torch.ones((m,m))).all())
 
-    #TODO: Add test_nonpos, test_nonneg, test_zero
-
 class TestGenTorchExpAdvanced(unittest.TestCase):
     """ Unit tests for gen_torch_exp"""
 

@@ -1,17 +1,20 @@
 from functools import partial
 
 import torch
-
+from cvxpy.atoms.affine.add_expr import AddExpression
+from cvxpy.constraints.constraint import Constraint
+from cvxpy.constraints.nonpos import NonNeg, NonPos
+from cvxpy.constraints.zero import Zero
 from cvxpy.expressions.expression import Expression
 from cvxpy.expressions.constants.constant import Constant
 from cvxpy.expressions.constants.parameter import Parameter
 from cvxpy.expressions.variable import Variable
+from cvxpy.expressions.leaf import Leaf
 
 from cvxtorch.variables_dict.variables_dict import VariablesDict
 from cvxtorch.utils.torch_utils import VAR_TYPE, gen_tensor
 from cvxtorch.utils.exp2tch import EXPR2TORCH
 
-#TODO: Add unit tests to
 #TODO: Add docstring
 class TorchExpression():
     """
@@ -29,8 +32,24 @@ class TorchExpression():
         self.implemented_only = implemented_only
         self._tch_exp, self._vars_dict = self._gen_torch_exp(expr=expr, provided_vars_list=provided_vars_list)
 
+    #TODO: Add docstring
+    def _gen_torch_exp(self, expr, provided_vars_list: list = []) -> tuple[callable, VariablesDict]:
+        if isinstance(expr, Leaf): #This if must be first: Leaf is a subclass of Expression
+            return self._gen_torch_exp_leaf(expr, provided_vars_list)
+        elif isinstance(expr, Expression):
+            return self._gen_torch_exp_expr(expr, provided_vars_list)
+        elif isinstance(expr, Constraint):
+            return self._gen_torch_exp_constraint(expr, provided_vars_list)
+        elif isinstance(expr, NonPos):
+            return self._gen_torch_exp_nonpos(expr, provided_vars_list)
+        elif isinstance(expr, Zero):
+            return self._gen_torch_exp_zero(expr, provided_vars_list)
+        else:
+            raise ValueError(f"Unsupported expression type: {type(expr)}.")
+
     #TODO: Update the docstring
-    def _gen_torch_exp(self, expr: Expression, provided_vars_list:list = []) -> tuple[callable, VariablesDict]:
+    # def _gen_torch_exp_expr(self, expr: Expression, provided_vars_list: list = []) -> tuple[callable, VariablesDict]:
+    def _gen_torch_exp_expr(self, expr: Expression, provided_vars_list: list = []) -> tuple[callable, VariablesDict]:
         """
         This function generates a torch expression from the args of this expression.
         A torch expression is a function that implements a torch function that evaluates the same
@@ -204,11 +223,39 @@ class TorchExpression():
             #This helps with overloading this function to be used with matrices.
             transpose_if_matmul(expr, res, transposable_elements)
             return self.apply_torch_numeric(expr, res)
-        
+
         vars_dict = VariablesDict(provided_vars_list=provided_vars_list)
         ind_to_value_type = _gen_consts_vars(expr, vars_dict)
         return partial(wrapped_func, self, expr, ind_to_value_type, vars_dict), vars_dict
     
+    def _gen_torch_exp_dec(torch_generator):
+        def inner(self, expr, provided_vars_list: list =  []) -> tuple[callable, VariablesDict]:
+            new_expr = torch_generator(self, expr, provided_vars_list)
+            return self._gen_torch_exp(new_expr, provided_vars_list=provided_vars_list)
+        return inner
+
+    @_gen_torch_exp_dec
+    def _gen_torch_exp_leaf(self, expr: Leaf, provided_vars_list: list = []) -> tuple[callable, VariablesDict]:
+        return AddExpression([expr]) #This is an easy way to convert a leaf into an expression.
+
+    @_gen_torch_exp_dec
+    def _gen_torch_exp_constraint(self, expr: Constraint, provided_vars_list: list = []) -> tuple[callable, VariablesDict]:
+        """ This function generates a torch expression (args[0]-args[1]). 
+            The order of the arguments is as it appears in args[0]-args[1] (from left to right)
+        """
+        return expr.args[0]-expr.args[1]
+    
+    @_gen_torch_exp_dec
+    def _gen_torch_exp_nonpos(self, expr: NonPos, provided_vars_list: list = []) -> tuple[callable, VariablesDict]:
+        return expr.args[0]<=0
+    
+    @_gen_torch_exp_dec
+    def _gen_torch_exp_nonneg(self, expr: NonNeg, provided_vars_list: list = []) -> tuple[callable, VariablesDict]:
+        return expr.args[0]>=0
+    
+    @_gen_torch_exp_dec
+    def _gen_torch_exp_zero(self, expr: Zero, provided_vars_list: list = []) -> tuple[callable, VariablesDict]:
+        return expr.args[0]==0
 
     def apply_torch_numeric(self, expr: Expression, values: list[torch.Tensor]) -> torch.Tensor:
         """
@@ -217,7 +264,7 @@ class TorchExpression():
         """
         torch_numeric = EXPR2TORCH.get(type(expr))
         if torch_numeric:
-            return torch_numeric(expr, values)
+            return torch_numeric.torch_numeric(expr, values)
         elif not self.implemented_only:
             return expr.numeric(values)
         else:

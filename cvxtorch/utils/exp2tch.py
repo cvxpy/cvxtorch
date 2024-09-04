@@ -32,6 +32,7 @@ from cvxpy.atoms.affine.diag import diag_vec, diag_mat
 from cvxpy.atoms.affine.hstack import Hstack
 from cvxpy.atoms.affine.imag import imag
 from cvxpy.atoms.affine.kron import kron
+from cvxpy.atoms.affine.unary_operators import NegExpression
 from cvxpy.atoms.affine.promote import Promote
 from cvxpy.atoms.affine.real import real
 from cvxpy.atoms.affine.reshape import reshape
@@ -91,6 +92,7 @@ import cvxtorch.torch_numerics.affine.reshape as reshape_tch
 import cvxtorch.torch_numerics.affine.sum as sum_tch
 import cvxtorch.torch_numerics.affine.trace as trace_tch
 import cvxtorch.torch_numerics.affine.transpose as transpose_tch
+import cvxtorch.torch_numerics.affine.unary_operators as unary_operators_tch
 import cvxtorch.torch_numerics.affine.upper_tri as upper_tri_tch
 import cvxtorch.torch_numerics.affine.vstack as vstack_tch
 import cvxtorch.torch_numerics.elementwise.abs as abs_tch
@@ -140,6 +142,7 @@ EXPR2TORCH = {
     Hstack: hstack_tch.torch_numeric,
     imag: imag_tch.torch_numeric,
     kron: kron_tch.torch_numeric,
+    NegExpression: unary_operators_tch.torch_numeric,
     Promote: promote_tch.torch_numeric,
     real: real_tch.torch_numeric,
     reshape: reshape_tch.torch_numeric,

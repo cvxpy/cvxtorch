@@ -38,3 +38,16 @@ dynamic = ["version"]
 file = "README.md"
 content-type = "text/markdown"
 
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pre-commit",
+    "ruff",
+    "ruff-lsp",
+    "ipython",
+    "matplotlib",
+    "jupyterlab",
+    "ipdb",
+    "marimo",
+    "pyscipopt",
+]

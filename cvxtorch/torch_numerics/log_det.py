@@ -1,5 +1,7 @@
-from cvxpy.expressions.expression import Expression
+import numpy as np
 import torch
+from cvxpy.expressions.expression import Expression
+
 
 def torch_numeric(expr: Expression, values: list[torch.Tensor]) -> torch.Tensor:
     symm = (values[0] + torch.conj(values[0].T))/2

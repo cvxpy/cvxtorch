@@ -1,5 +1,5 @@
-from cvxpy.expressions.expression import Expression
 import torch
+
 
 def torch_numeric(expr, values: list[torch.Tensor]):
     if expr.axes is None:

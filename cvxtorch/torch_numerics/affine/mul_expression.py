@@ -1,6 +1,6 @@
 import cvxpy.interface as intf
-from cvxpy.expressions.expression import Expression
 import torch
+
 
 def torch_numeric(expr, values: list[torch.Tensor]) -> torch.Tensor:
     if values[0].shape == () or values[1].shape == () or \

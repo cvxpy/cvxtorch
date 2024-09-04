@@ -1,13 +1,13 @@
 import unittest
-import pytest
 
 import cvxpy as cp
-import torch
 import numpy as np
+import torch
 from cvxpy.constraints.nonpos import NonNeg, NonPos
 from cvxpy.constraints.zero import Zero
 
 from cvxtorch.torch_expression import TorchExpression
+
 
 class TestGenTorchExp(unittest.TestCase):
     """ Unit tests for the atoms module. """
@@ -237,7 +237,8 @@ class TestDtype(unittest.TestCase):
         self.c = cp.Constant(self.n)
 
     def test_dtypes(self):
-        for dtype in [torch.float64, torch.float32, torch.int64, torch.int32, torch.int16, torch.int8]:
+        for dtype in [torch.float64, torch.float32, torch.int64, torch.int32, torch.int16,\
+                        torch.int8]:
             tch_exp = TorchExpression(self.c, dtype=dtype).tch_exp
             test = tch_exp()
             self.assertTrue(torch.all(test==torch.Tensor([self.n])).all())

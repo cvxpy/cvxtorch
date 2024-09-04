@@ -15,10 +15,68 @@ from cvxtorch.variables_dict.variables_dict import VariablesDict
 from cvxtorch.utils.torch_utils import VAR_TYPE, gen_tensor
 from cvxtorch.utils.exp2tch import EXPR2TORCH
 
-#TODO: Add docstring
 class TorchExpression():
     """
+    This class generates a torch expression from the args of this expression.
+    A torch expression is a function that implements a torch function that evaluates the same
+    mathematical expression as the CVXPY expression.
+
+    For example, if the expression is a subtraction expression between two variables,
+    then the generated torch expression is a function that subtracts two tensors.
+
+    .. code:: python
+        import torch
+        import cvxpy as cp
+        from cvxtorch import TorchExpression
+        n = 5
+        x = cp.Variable(n, name="x")
+        y = cp.Parameter(n, name="y")
+        z = 3
+        exp = x-y+2*z
+
+        tch_x = torch.arange(1, n+1)
+        tch_y = torch.arange(0, n)
+
+        tch_exp = TorchExpression(exp).tch_exp #tch_exp implements x-y+2*z, where x and y are torch.Tensor.
+        tch_res = tch_exp(tch_x, tch_y) #Contains a torch.Tensor [7.0]*n
+
+
+    The user can determine the order in which arguments are passed to the generated torch expression.
+    For example, to pass ``y`` before ``x`` in the previous example:
+
+    .. code:: python
+        tch_exp = TorchExpression(exp,provided_vars_list=[y,x]).tch_exp #tch_exp implements x-y+2*z, where x and y are torch.Tensor.
+        tch_res = tch_exp(tch_x, tch_y) #Contains a torch.Tensor [5.0]*n
+
+    When initializing a TorchExpression object, two properties are created:
+    tch_exp (callable):
+        The generated torch expression.
     
+    vars_dict (cvxtorch.variables_dict.variables_dict.VariablesDict):
+        An object that maps from CVXPY atoms to their indices in the generated torch expression.
+
+    Arguments:
+    def __init__(self, expr: Expression, provided_vars_list:list = [], implemented_only: bool=True, dtype: torch.dtype = torch.float64):
+        expr (Expression | Constraint):
+            Generate a torch expression for this expression.
+            If a constraint is passed:
+                *NonPos and Zero: expr.args is generated.
+                *NonNeg: -expr.args is generated.
+                *Inequality: args[0]-args[1] is generated.
+        
+        provided_vars_list (list): default=[]
+            A list of CVXPY atoms. This list determines the argument positions of the generated
+            torch expression.
+            If an empty list is passed (default), then the order of arguments is the same as
+            in args of this expression (from left to right).
+        
+        implemented_only (bool): default=True
+            If True, use only atoms for which torch_numerics is explicitly passed.
+            If False, will try to use the atom's numeric as torch_numeric (may result in errors).
+        
+        dtype (torch.dtype): default=torch.float64
+            When generating the expression, any cp.Constant will be converted to a torch.Tensor with
+            this dtype.
     """
     @property
     def tch_exp(self):
@@ -28,12 +86,16 @@ class TorchExpression():
     def vars_dict(self):
         return self._vars_dict
 
-    def __init__(self, expr: Expression, provided_vars_list:list = [], implemented_only: bool=True, dtype: torch.dtype = torch.float64):
+    def __init__(self, expr: Expression | Constraint, provided_vars_list:list = [], implemented_only: bool=True, dtype: torch.dtype = torch.float64):
         self.implemented_only = implemented_only
         self._tch_exp, self._vars_dict = self._gen_torch_exp(expr=expr, provided_vars_list=provided_vars_list, dtype=dtype)
 
-    #TODO: Add docstring
     def _gen_torch_exp(self, expr, provided_vars_list: list = [], dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
+        """
+        This is a helper function selects the correct gen_torch_exp based on the type of expr.
+
+        Arguments & Returns: See class docstring.
+        """
         if isinstance(expr, Leaf): #This if must be first: Leaf is a subclass of Expression
             return self._gen_torch_exp_leaf(expr, provided_vars_list=provided_vars_list, dtype=dtype)
         elif isinstance(expr, Expression):
@@ -49,43 +111,11 @@ class TorchExpression():
         else:
             raise ValueError(f"Unsupported expression type: {type(expr)}.")
 
-    #TODO: Update the docstring
-    # def _gen_torch_exp_expr(self, expr: Expression, provided_vars_list: list = []) -> tuple[callable, VariablesDict]:
     def _gen_torch_exp_expr(self, expr: Expression, provided_vars_list: list = [], dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
         """
-        This function generates a torch expression from the args of this expression.
-        A torch expression is a function that implements a torch function that evaluates the same
-        mathematical expression as the CVXPY expression.
+        This is a helper function that generates a torch expression for an Expression.
 
-        For example, if the expression is a subtraction expression between two variables,
-        then the generated torch expression is a function that subtracts two tensors.
-
-        .. code:: python
-            import torch
-            import cvxpy as cp
-            x = cp.Variable()
-            y = cp.Variable()
-            exp = x-y
-            tch_exp, _ = exp.gen_torch_exp() # This implements x-y
-            tch_exp(torch.tensor(5), torch.tensor(3)) # This returns a torch.Tensor(2).
-
-        The order of the arguments in the torch expression is the same order as in args of this
-        expression by default, or can be passed by the user.
-
-        Arguments:
-            provided_vars_list (list): default=[]
-                A list of CVXPY atoms. This list determines the argument positions of the generated
-                torch expression.
-                If an empty list is passed (default), then the order of arguments is the same as
-                in args of this expression (from left to right).
-        
-        Returns:
-            tch_exp (callable):
-                The generated torch expression.
-            
-            vars_dict (cvxpy.utilities.torch_utils.VariablesDict):
-                An object that maps from CVXPY atoms to their indices in the generated torch
-                expression.
+        Arguments & Returns: See class docstring.
         """
 
         def _gen_var_type(arg) -> VAR_TYPE:
@@ -231,6 +261,9 @@ class TorchExpression():
         return partial(wrapped_func, self, expr, ind_to_value_type, vars_dict, dtype), vars_dict
     
     def _gen_torch_exp_dec(torch_generator):
+        """
+        This is a decorator function. It is used for all non-expression (including leaves).
+        """
         def inner(self, expr, provided_vars_list: list =  [], dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
             new_expr = torch_generator(self, expr, provided_vars_list)
             return self._gen_torch_exp(new_expr, provided_vars_list=provided_vars_list, dtype=dtype)
@@ -238,6 +271,9 @@ class TorchExpression():
 
     @_gen_torch_exp_dec
     def _gen_torch_exp_leaf(self, expr: Leaf, provided_vars_list: list = [], dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
+        """
+        This is a helper function that generates a torch expression for a leaf.
+        """
         return AddExpression([expr]) #This is an easy way to convert a leaf into an expression.
 
     @_gen_torch_exp_dec
@@ -249,14 +285,23 @@ class TorchExpression():
     
     @_gen_torch_exp_dec
     def _gen_torch_exp_nonpos(self, expr: NonPos, provided_vars_list: list = [], dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
+        """
+        This is a helper function that generates a torch expression for a NonPos constraint.
+        """
         return expr.args[0]<=0
     
     @_gen_torch_exp_dec
     def _gen_torch_exp_nonneg(self, expr: NonNeg, provided_vars_list: list = [], dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
+        """
+        This is a helper function that generates a torch expression for a NonNeg constraint.
+        """
         return expr.args[0]>=0
     
     @_gen_torch_exp_dec
     def _gen_torch_exp_zero(self, expr: Zero, provided_vars_list: list = [], dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
+        """
+        This is a helper function that generates a torch expression for a Zero constraint.
+        """
         return expr.args[0]==0
 
     def apply_torch_numeric(self, expr: Expression, values: list[torch.Tensor]) -> torch.Tensor:

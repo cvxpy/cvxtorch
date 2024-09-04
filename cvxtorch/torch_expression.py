@@ -33,23 +33,25 @@ class TorchExpression():
         self._tch_exp, self._vars_dict = self._gen_torch_exp(expr=expr, provided_vars_list=provided_vars_list)
 
     #TODO: Add docstring
-    def _gen_torch_exp(self, expr, provided_vars_list: list = []) -> tuple[callable, VariablesDict]:
+    def _gen_torch_exp(self, expr, provided_vars_list: list = [], dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
         if isinstance(expr, Leaf): #This if must be first: Leaf is a subclass of Expression
-            return self._gen_torch_exp_leaf(expr, provided_vars_list)
+            return self._gen_torch_exp_leaf(expr, provided_vars_list=provided_vars_list, dtype=dtype)
         elif isinstance(expr, Expression):
-            return self._gen_torch_exp_expr(expr, provided_vars_list)
-        elif isinstance(expr, Constraint):
-            return self._gen_torch_exp_constraint(expr, provided_vars_list)
+            return self._gen_torch_exp_expr(expr, provided_vars_list=provided_vars_list, dtype=dtype)
         elif isinstance(expr, NonPos):
-            return self._gen_torch_exp_nonpos(expr, provided_vars_list)
+            return self._gen_torch_exp_nonpos(expr, provided_vars_list=provided_vars_list, dtype=dtype)
+        elif isinstance(expr, NonNeg):
+            return self._gen_torch_exp_nonneg(expr, provided_vars_list=provided_vars_list, dtype=dtype)
         elif isinstance(expr, Zero):
-            return self._gen_torch_exp_zero(expr, provided_vars_list)
+            return self._gen_torch_exp_zero(expr, provided_vars_list=provided_vars_list, dtype=dtype)
+        elif isinstance(expr, Constraint): #This has to be the last checked constraint.
+            return self._gen_torch_exp_constraint(expr, provided_vars_list)
         else:
             raise ValueError(f"Unsupported expression type: {type(expr)}.")
 
     #TODO: Update the docstring
     # def _gen_torch_exp_expr(self, expr: Expression, provided_vars_list: list = []) -> tuple[callable, VariablesDict]:
-    def _gen_torch_exp_expr(self, expr: Expression, provided_vars_list: list = []) -> tuple[callable, VariablesDict]:
+    def _gen_torch_exp_expr(self, expr: Expression, provided_vars_list: list = [], dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
         """
         This function generates a torch expression from the args of this expression.
         A torch expression is a function that implements a torch function that evaluates the same
@@ -97,22 +99,22 @@ class TorchExpression():
             else:
                 return VAR_TYPE.EXPRESSION
 
-        def _gen_consts_vars(expr: Expression, vars_dict: VariablesDict) -> dict:
+        def _gen_consts_vars(expr: Expression, vars_dict: VariablesDict, dtype: torch.dtype) -> dict:
             """ This is a helper function that generates the index -> (value, type) dictionary. """
             ind_to_value_type = dict() #Local dictionary
             for i, arg in enumerate(expr.args):
                 var_type = _gen_var_type(arg)
                 if isinstance(arg, Constant):
-                    ind_to_value_type[i] = (gen_tensor(arg.value, dtype=torch.float64), var_type)
+                    ind_to_value_type[i] = (gen_tensor(arg.value, dtype=dtype), var_type)
                 elif isinstance(arg, Parameter) or isinstance(arg, Variable):
                     ind_to_value_type[i] = (arg, var_type)
                     vars_dict.add_var(arg)
                 else:
                     ind_to_value_type[i] = (arg, var_type)
-                    _gen_consts_vars(arg, vars_dict)
+                    _gen_consts_vars(arg, vars_dict, dtype)
             return ind_to_value_type
         
-        def wrapped_func(self, expr: Expression, ind_to_value_type: dict, vars_dict: VariablesDict, *args):
+        def wrapped_func(self, expr: Expression, ind_to_value_type: dict, vars_dict: VariablesDict, dtype: torch.dtype, *args):
             def transpose_if_matmul(expr: Expression, res: list, should_transpose: list) -> None:
                 """
                 This function transposes the second element if the wrapped function is a dot product
@@ -216,8 +218,8 @@ class TorchExpression():
                 elif curr_arg[1]==VAR_TYPE.VARIABLE_PARAMETER:
                     res.append(args[vars_dict.vars_dict[curr_arg[0]]])
                 else:
-                    rec_ind_to_value_type = _gen_consts_vars(curr_arg[0], vars_dict)
-                    res.append(wrapped_func(self, curr_arg[0], rec_ind_to_value_type, vars_dict, *args))
+                    rec_ind_to_value_type = _gen_consts_vars(curr_arg[0], vars_dict, dtype)
+                    res.append(wrapped_func(self, curr_arg[0], rec_ind_to_value_type, vars_dict, dtype, *args))
                 transposable_elements.append(should_transpose(curr_arg))
             #If this is a matrix multiplicaiton operation between 2 elements, transpose the second.
             #This helps with overloading this function to be used with matrices.
@@ -225,36 +227,36 @@ class TorchExpression():
             return self.apply_torch_numeric(expr, res)
 
         vars_dict = VariablesDict(provided_vars_list=provided_vars_list)
-        ind_to_value_type = _gen_consts_vars(expr, vars_dict)
-        return partial(wrapped_func, self, expr, ind_to_value_type, vars_dict), vars_dict
+        ind_to_value_type = _gen_consts_vars(expr, vars_dict, dtype)
+        return partial(wrapped_func, self, expr, ind_to_value_type, vars_dict, dtype), vars_dict
     
     def _gen_torch_exp_dec(torch_generator):
-        def inner(self, expr, provided_vars_list: list =  []) -> tuple[callable, VariablesDict]:
+        def inner(self, expr, provided_vars_list: list =  [], dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
             new_expr = torch_generator(self, expr, provided_vars_list)
-            return self._gen_torch_exp(new_expr, provided_vars_list=provided_vars_list)
+            return self._gen_torch_exp(new_expr, provided_vars_list=provided_vars_list, dtype=dtype)
         return inner
 
     @_gen_torch_exp_dec
-    def _gen_torch_exp_leaf(self, expr: Leaf, provided_vars_list: list = []) -> tuple[callable, VariablesDict]:
+    def _gen_torch_exp_leaf(self, expr: Leaf, provided_vars_list: list = [], dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
         return AddExpression([expr]) #This is an easy way to convert a leaf into an expression.
 
     @_gen_torch_exp_dec
-    def _gen_torch_exp_constraint(self, expr: Constraint, provided_vars_list: list = []) -> tuple[callable, VariablesDict]:
+    def _gen_torch_exp_constraint(self, expr: Constraint, provided_vars_list: list = [], dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
         """ This function generates a torch expression (args[0]-args[1]). 
             The order of the arguments is as it appears in args[0]-args[1] (from left to right)
         """
         return expr.args[0]-expr.args[1]
     
     @_gen_torch_exp_dec
-    def _gen_torch_exp_nonpos(self, expr: NonPos, provided_vars_list: list = []) -> tuple[callable, VariablesDict]:
+    def _gen_torch_exp_nonpos(self, expr: NonPos, provided_vars_list: list = [], dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
         return expr.args[0]<=0
     
     @_gen_torch_exp_dec
-    def _gen_torch_exp_nonneg(self, expr: NonNeg, provided_vars_list: list = []) -> tuple[callable, VariablesDict]:
+    def _gen_torch_exp_nonneg(self, expr: NonNeg, provided_vars_list: list = [], dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
         return expr.args[0]>=0
     
     @_gen_torch_exp_dec
-    def _gen_torch_exp_zero(self, expr: Zero, provided_vars_list: list = []) -> tuple[callable, VariablesDict]:
+    def _gen_torch_exp_zero(self, expr: Zero, provided_vars_list: list = [], dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
         return expr.args[0]==0
 
     def apply_torch_numeric(self, expr: Expression, values: list[torch.Tensor]) -> torch.Tensor:

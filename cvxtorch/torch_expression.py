@@ -198,7 +198,7 @@ class TorchExpression():
                     res.append(args[vars_dict.vars_dict[curr_arg[0]]])
                 else:
                     rec_ind_to_value_type = _gen_consts_vars(curr_arg[0], vars_dict)
-                    res.append(wrapped_func(curr_arg[0], rec_ind_to_value_type, vars_dict, *args))
+                    res.append(wrapped_func(self, curr_arg[0], rec_ind_to_value_type, vars_dict, *args))
                 transposable_elements.append(should_transpose(curr_arg))
             #If this is a matrix multiplicaiton operation between 2 elements, transpose the second.
             #This helps with overloading this function to be used with matrices.
@@ -221,6 +221,6 @@ class TorchExpression():
         elif not self.implemented_only:
             return expr.numeric(values)
         else:
-            raise NotImplementedError(f"The torch_numeric function of {expr} is not implemented."
+            raise NotImplementedError(f"The torch_numeric function of {type(expr)} is not implemented."
                                       f"If you want to use CVXPY's numeric instead, pass"
                                       f"implemented_only=False.")

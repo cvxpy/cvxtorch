@@ -27,7 +27,7 @@ name = "cvxtorch"
 description = "A CVXPY to Pytorch Expression converter."
 dependencies = [
     "cvxpy",
-    "numpy >= 2.0.0",
+    "numpy < 2.0.0",
     "scipy >= 1.1.0",
     "torch",
 ]

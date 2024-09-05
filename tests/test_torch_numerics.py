@@ -1,14 +1,14 @@
 import unittest
 
-from cvxpy import Variable
 import cvxpy.atoms as atoms
 import cvxpy.atoms.affine as affine
 import cvxpy.atoms.elementwise as elementwise
 import numpy as np
 import torch
+from cvxpy import Variable
 
-from cvxtorch.torch_expression import TorchExpression
 from cvxtorch.utils.exp2tch import EXPR2TORCH
+
 
 class TestTorchNumeric(unittest.TestCase):
     """ Unit tests for the atoms torch_numeric. """

@@ -1,6 +1,6 @@
+import numpy as np
 import torch
 from cvxpy.expressions.expression import Expression
-import numpy as np
 
 
 def _get_args_from_values(values: list[np.ndarray]) -> tuple[torch.Tensor, torch.Tensor]:

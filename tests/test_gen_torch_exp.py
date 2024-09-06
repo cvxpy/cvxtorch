@@ -35,12 +35,12 @@ class TestGenTorchExp(unittest.TestCase):
         exp5 = w-x
         exp6 = X@Y.T
 
-        torch_exp1 = TorchExpression(exp1).torch
-        torch_exp2 = TorchExpression(exp2).torch
-        torch_exp3 = TorchExpression(exp3).torch
-        torch_exp4 = TorchExpression(exp4).torch
-        torch_exp5 = TorchExpression(exp5).torch
-        torch_exp6 = TorchExpression(exp6).torch
+        torch_exp1 = TorchExpression(exp1).torch_expression
+        torch_exp2 = TorchExpression(exp2).torch_expression
+        torch_exp3 = TorchExpression(exp3).torch_expression
+        torch_exp4 = TorchExpression(exp4).torch_expression
+        torch_exp5 = TorchExpression(exp5).torch_expression
+        torch_exp6 = TorchExpression(exp6).torch_expression
 
         test1 = torch_exp1(5*torch.ones(n), torch.tensor([1.,2.,3.]))
         test2 = torch_exp2(1*torch.ones(n), torch.tensor([1.,2.,3.]))
@@ -82,13 +82,13 @@ class TestGenTorchExp(unittest.TestCase):
         constraint7 = X@Y.T <= 0
         X@Y.T
 
-        exp1 = TorchExpression(constraint1).torch
-        exp2 = TorchExpression(constraint2).torch
-        exp3 = TorchExpression(constraint3).torch
-        exp4 = TorchExpression(constraint4).torch
-        exp5 = TorchExpression(constraint5).torch
-        exp6 = TorchExpression(constraint6).torch
-        exp7 = TorchExpression(constraint7).torch
+        exp1 = TorchExpression(constraint1).torch_expression
+        exp2 = TorchExpression(constraint2).torch_expression
+        exp3 = TorchExpression(constraint3).torch_expression
+        exp4 = TorchExpression(constraint4).torch_expression
+        exp5 = TorchExpression(constraint5).torch_expression
+        exp6 = TorchExpression(constraint6).torch_expression
+        exp7 = TorchExpression(constraint7).torch_expression
 
         x_test = torch.tensor([1,2,3], dtype=float)
         z_test = torch.zeros(m, dtype=float)
@@ -145,18 +145,18 @@ class TestGenTorchExpAdvanced(unittest.TestCase):
         exp10 = self.c
         exp11 = self.x+2*self.w+3*self.c
 
-        torch_exp1 = TorchExpression(exp1).torch
-        torch_exp2 = TorchExpression(exp2).torch
-        torch_exp3 = TorchExpression(exp3).torch
-        torch_exp4 = TorchExpression(exp4).torch
-        torch_exp5 = TorchExpression(exp5).torch
-        torch_exp6 = TorchExpression(exp6).torch
-        torch_exp7 = TorchExpression(exp7).torch
-        torch_exp8 = TorchExpression(exp8).torch
-        torch_exp9 = TorchExpression(exp9).torch
-        torch_exp10 = TorchExpression(exp10).torch
-        torch_exp11_unordered = TorchExpression(exp11).torch
-        torch_exp11 = TorchExpression(exp11, provided_vars_list=[self.w, self.x]).torch
+        torch_exp1 = TorchExpression(exp1).torch_expression
+        torch_exp2 = TorchExpression(exp2).torch_expression
+        torch_exp3 = TorchExpression(exp3).torch_expression
+        torch_exp4 = TorchExpression(exp4).torch_expression
+        torch_exp5 = TorchExpression(exp5).torch_expression
+        torch_exp6 = TorchExpression(exp6).torch_expression
+        torch_exp7 = TorchExpression(exp7).torch_expression
+        torch_exp8 = TorchExpression(exp8).torch_expression
+        torch_exp9 = TorchExpression(exp9).torch_expression
+        torch_exp10 = TorchExpression(exp10).torch_expression
+        torch_exp11_unordered = TorchExpression(exp11).torch_expression
+        torch_exp11 = TorchExpression(exp11, provided_vars_list=[self.w, self.x]).torch_expression
 
         test1  = torch_exp1(5*torch.ones(self.n, dtype=torch.float64),
                             torch.tensor([1.,2.,3.], dtype=torch.float64))
@@ -202,8 +202,8 @@ class TestSpecialConstraints(unittest.TestCase):
         self.t2_exp = (self.a*self.t1+self.b*self.t2+self.c.value).float()
     
     def test_nonpos(self) -> None:
-        tch_exp1 = TorchExpression(NonPos(self.exp1)).torch
-        tch_exp2 = TorchExpression(NonPos(self.exp2), dtype=torch.float32).torch
+        tch_exp1 = TorchExpression(NonPos(self.exp1)).torch_expression
+        tch_exp2 = TorchExpression(NonPos(self.exp2), dtype=torch.float32).torch_expression
 
         test1 = tch_exp1(self.t1)
         test2 = tch_exp2(self.t1, self.t2)
@@ -212,8 +212,8 @@ class TestSpecialConstraints(unittest.TestCase):
         torch.testing.assert_close(test2, self.t2_exp)
 
     def test_nonneg(self) -> None:
-        tch_exp1 = TorchExpression(NonNeg(self.exp1)).torch
-        tch_exp2 = TorchExpression(NonNeg(self.exp2), dtype=torch.float32).torch
+        tch_exp1 = TorchExpression(NonNeg(self.exp1)).torch_expression
+        tch_exp2 = TorchExpression(NonNeg(self.exp2), dtype=torch.float32).torch_expression
 
         test1 = tch_exp1(self.t1)
         test2 = tch_exp2(self.t1, self.t2)
@@ -222,8 +222,8 @@ class TestSpecialConstraints(unittest.TestCase):
         torch.testing.assert_close(test2, -self.t2_exp)
 
     def test_zero(self) -> None:
-        tch_exp1 = TorchExpression(Zero(self.exp1)).torch
-        tch_exp2 = TorchExpression(Zero(self.exp2), dtype=torch.float32).torch
+        tch_exp1 = TorchExpression(Zero(self.exp1)).torch_expression
+        tch_exp2 = TorchExpression(Zero(self.exp2), dtype=torch.float32).torch_expression
 
         test1 = tch_exp1(self.t1)
         test2 = tch_exp2(self.t1, self.t2)
@@ -239,7 +239,7 @@ class TestDtype(unittest.TestCase):
     def test_dtypes(self):
         for dtype in [torch.float64, torch.float32, torch.int64, torch.int32, torch.int16,\
                         torch.int8]:
-            tch_exp = TorchExpression(self.c, dtype=dtype).torch
+            tch_exp = TorchExpression(self.c, dtype=dtype).torch_expression
             test = tch_exp()
             self.assertTrue(torch.all(test==torch.Tensor([self.n])).all())
             self.assertTrue(test.dtype==dtype)

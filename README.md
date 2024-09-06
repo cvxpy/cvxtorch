@@ -34,7 +34,7 @@ tch_res = tch_exp(tch_x, tch_y) #Contains a torch.Tensor [7.0]*n
 ## Returned object
 
 A CVXTorch TorchExpression object is created. It has two properties:
-* **tch_exp (callable)**: The generated torch expression.
+* **torch_expression (callable)**: The generated torch expression.
   
-* **vars_dict (cvxtorch.VariablesDict)**:
+* **variables_dictionary (cvxtorch.VariablesDict)**:
       An object that maps from CVXPY atoms to their indices in the generated torch expression.

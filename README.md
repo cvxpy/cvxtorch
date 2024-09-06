@@ -16,7 +16,7 @@ pip install -e .
 ```python
 import cvxpy as cp
 import torch
-import cvxtorh
+from cvxtorch import TorchExpression
 
 n = 5
 x = cp.Variable(n, name="x")
@@ -27,7 +27,7 @@ exp = x-y+2*z
 tch_x = torch.arange(1, n+1)
 tch_y = torch.arange(0, n)
 
-tch_exp, _ = exp.gen_torch_exp() #tch_exp implements x-y+2*z, where x and y are torch.Tensor.
+tch_exp = TorchExpression(exp).tch_exp #tch_exp implements x-y+2*z, where x and y are torch.Tensor.
 tch_res = tch_exp(tch_x, tch_y) #Contains a torch.Tensor [7.0]*n
 ```
 

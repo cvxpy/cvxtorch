@@ -83,17 +83,17 @@ class TorchExpression():
             this dtype.
     """
     @property
-    def tch_exp(self):
-        return self._tch_exp
+    def torch(self):
+        return self._torch
     
     @property
-    def vars_dict(self):
-        return self._vars_dict
+    def variables_dictionary(self):
+        return self._variables_dictionary
 
     def __init__(self, expr: Expression | Constraint, provided_vars_list:list = [], 
                     implemented_only: bool=True, dtype: torch.dtype = torch.float64):
         self.implemented_only = implemented_only
-        self._tch_exp, self._vars_dict = self._gen_torch_exp(expr=expr,
+        self._torch, self._variables_dictionary = self._gen_torch_exp(expr=expr,
                     provided_vars_list=provided_vars_list, dtype=dtype)
 
     def _gen_torch_exp(self, expr, provided_vars_list: list = [], 

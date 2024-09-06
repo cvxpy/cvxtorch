@@ -91,13 +91,13 @@ class TorchExpression():
         return self._variables_dictionary
 
     def __init__(self, expr: Expression | Constraint, provided_vars_list:list = [], 
-                    implemented_only: bool=True, dtype: torch_expression.dtype = torch_expression.float64):
+                    implemented_only: bool=True, dtype: torch.dtype = torch.float64):
         self.implemented_only = implemented_only
         self._torch_expression, self._variables_dictionary = self._gen_torch_exp(expr=expr,
                     provided_vars_list=provided_vars_list, dtype=dtype)
 
     def _gen_torch_exp(self, expr, provided_vars_list: list = [], 
-                    dtype: torch_expression.dtype = torch_expression.float64) -> tuple[callable, VariablesDict]:
+                    dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
         """
         This is a helper function selects the correct gen_torch_exp based on the type of expr.
 
@@ -124,7 +124,7 @@ class TorchExpression():
             raise ValueError(f"Unsupported expression type: {type(expr)}.")
 
     def _gen_torch_exp_expr(self, expr: Expression, provided_vars_list: list = [],
-                    dtype: torch_expression.dtype = torch_expression.float64) -> tuple[callable, VariablesDict]:
+                    dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
         """
         This is a helper function that generates a torch expression for an Expression.
 
@@ -287,7 +287,7 @@ class TorchExpression():
 
     @_gen_torch_exp_dec
     def _gen_torch_exp_leaf(self, expr: Leaf, provided_vars_list: list = [],
-                        dtype: torch_expression.dtype = torch_expression.float64) -> tuple[callable, VariablesDict]:
+                        dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
         """
         This is a helper function that generates a torch expression for a leaf.
         """
@@ -295,7 +295,7 @@ class TorchExpression():
 
     @_gen_torch_exp_dec
     def _gen_torch_exp_constraint(self, expr: Constraint, provided_vars_list: list = [],
-                        dtype: torch_expression.dtype = torch_expression.float64) -> tuple[callable, VariablesDict]:
+                        dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
         """ This function generates a torch expression (args[0]-args[1]). 
             The order of the arguments is as it appears in args[0]-args[1] (from left to right)
         """
@@ -303,7 +303,7 @@ class TorchExpression():
     
     @_gen_torch_exp_dec
     def _gen_torch_exp_nonpos(self, expr: NonPos, provided_vars_list: list = [],
-                        dtype: torch_expression.dtype = torch_expression.float64) -> tuple[callable, VariablesDict]:
+                        dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
         """
         This is a helper function that generates a torch expression for a NonPos constraint.
         """
@@ -311,7 +311,7 @@ class TorchExpression():
     
     @_gen_torch_exp_dec
     def _gen_torch_exp_nonneg(self, expr: NonNeg, provided_vars_list: list = [],
-                        dtype: torch_expression.dtype = torch_expression.float64) -> tuple[callable, VariablesDict]:
+                        dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
         """
         This is a helper function that generates a torch expression for a NonNeg constraint.
         """
@@ -319,13 +319,13 @@ class TorchExpression():
     
     @_gen_torch_exp_dec
     def _gen_torch_exp_zero(self, expr: Zero, provided_vars_list: list = [],
-                        dtype: torch_expression.dtype = torch_expression.float64) -> tuple[callable, VariablesDict]:
+                        dtype: torch.dtype = torch.float64) -> tuple[callable, VariablesDict]:
         """
         This is a helper function that generates a torch expression for a Zero constraint.
         """
         return expr.args[0]==0
 
-    def apply_torch_numeric(self, expr: Expression, values: list[torch_expression.Tensor]) -> torch_expression.Tensor:
+    def apply_torch_numeric(self, expr: Expression, values: list[torch.Tensor]) -> torch.Tensor:
         """
         This function returns self.torch_numeric(values) if it exists,
         and self.numeric(values) otherwise.

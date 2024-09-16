@@ -10,6 +10,9 @@ from cvxpy import Variable
 from cvxtorch.utils.exp2tch import EXPR2TORCH
 from tests.settings import ATOL, RTOL
 
+seed = 12345
+np.random.seed(seed)
+torch.manual_seed(seed)
 
 class TestTorchNumeric(unittest.TestCase):
     """ Unit tests for the atoms torch_numeric. """

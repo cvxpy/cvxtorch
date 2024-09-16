@@ -8,6 +8,9 @@ from cvxpy.constraints.zero import Zero
 
 from cvxtorch.torch_expression import TorchExpression
 
+seed = 12345
+np.random.seed(seed)
+torch.manual_seed(seed)
 
 class TestGenTorchExp(unittest.TestCase):
     """ Unit tests for the atoms module. """

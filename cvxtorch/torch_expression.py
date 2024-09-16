@@ -1,4 +1,5 @@
 from functools import partial
+from typing import Union
 
 import torch
 from cvxpy.atoms.affine.add_expr import AddExpression
@@ -90,7 +91,7 @@ class TorchExpression():
     def variables_dictionary(self):
         return self._variables_dictionary
 
-    def __init__(self, expr: Expression | Constraint, provided_vars_list:list = [], 
+    def __init__(self, expr: Union[Expression, Constraint], provided_vars_list:list = [], 
                     implemented_only: bool=True, dtype: torch.dtype = torch.float64):
         self.implemented_only = implemented_only
         self._torch_expression, self._variables_dictionary = self._gen_torch_exp(expr=expr,

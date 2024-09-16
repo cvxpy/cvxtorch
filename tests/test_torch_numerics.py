@@ -8,6 +8,7 @@ import torch
 from cvxpy import Variable
 
 from cvxtorch.utils.exp2tch import EXPR2TORCH
+from tests.settings import ATOL, RTOL
 
 
 class TestTorchNumeric(unittest.TestCase):
@@ -56,7 +57,7 @@ class TestTorchNumeric(unittest.TestCase):
             res_tch = EXPR2TORCH.get(type(atom)).torch_numeric(atom, in_tch)
             if type(res_tch) is torch.Tensor:
                 res_tch = res_tch.detach().numpy()
-            assert np.allclose(res_np, res_tch, equal_nan=True)
+            assert np.allclose(res_np, res_tch, rtol=RTOL, atol=ATOL, equal_nan=True)
 
         assert EXPR2TORCH.get(type(atom)) is not None, f"Atom {atom} has no torch_numeric function."
         #Perform predefined tests

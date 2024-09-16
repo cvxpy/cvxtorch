@@ -1,6 +1,7 @@
 import torch
 from cvxpy.expressions.expression import Expression
 
+
 def torch_numeric(expr: Expression, values: list[torch.Tensor]) -> torch.Tensor:    
     inds = torch.triu_indices(row=values[0].shape[0], col=values[0].shape[1], offset=1)
     # This can be simplified as `return values[0][*inds]`. However, this doesn't work on <3.11.

@@ -12,8 +12,7 @@ from cvxpy.expressions.expression import Expression
 from cvxpy.expressions.leaf import Leaf
 from cvxpy.expressions.variable import Variable
 
-from cvxtorch.utils.exp2tch import EXPR2TORCH
-from cvxtorch.utils.torch_utils import VAR_TYPE, gen_tensor
+from cvxtorch.utils.torch_utils import VAR_TYPE, gen_tensor, get_torch_numeric
 from cvxtorch.variables_dict.variables_dict import VariablesDict
 
 
@@ -334,23 +333,10 @@ class TorchExpression():
         # torch_numeric = EXPR2TORCH.get(type(expr))
         torch_numeric = get_torch_numeric(expr)
         if torch_numeric:
-            return torch_numeric.torch_numeric(expr, values)
+            return torch_numeric(expr, values)
         elif not self.implemented_only:
             return expr.numeric(values)
         else:
             raise NotImplementedError(f"torch_numeric function of {type(expr)} is not implemented."
                                       f"If you want to use CVXPY's numeric instead, pass"
                                       f"implemented_only=False.")
-
-def get_torch_numeric(expr: Expression) -> callable:
-    """
-    This function returns the torch_numeric function of this atom.
-    It supports creating custom torch_numeric functions for atoms by the user.
-    If the user provides a torch_numeric function for the atom, this function will return it.
-    Otherwise, get the default one provided by this pacjage (from EXPR2TORCH).
-    """
-
-    torch_numeric = getattr(expr, "torch_numeric", None)
-    if torch_numeric:
-        return torch_numeric
-    return EXPR2TORCH.get(type(expr))

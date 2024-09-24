@@ -59,7 +59,7 @@ class TestTorchNumeric(unittest.TestCase):
             print(f"in_np = {in_np}")
             print(f"in_tch = {in_tch}")
             res_np = atom.numeric(in_np)
-            res_tch = EXPR2TORCH.get(type(atom)).torch_numeric(atom, in_tch)
+            res_tch = EXPR2TORCH.get(type(atom))(atom, in_tch)
             print(f"res_np = {res_np}")
             print(f"res_tch = {res_tch}")
             print("="*30)

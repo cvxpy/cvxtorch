@@ -331,7 +331,8 @@ class TorchExpression():
         This function returns self.torch_numeric(values) if it exists,
         and self.numeric(values) otherwise.
         """
-        torch_numeric = EXPR2TORCH.get(type(expr))
+        # torch_numeric = EXPR2TORCH.get(type(expr))
+        torch_numeric = get_torch_numeric(expr)
         if torch_numeric:
             return torch_numeric.torch_numeric(expr, values)
         elif not self.implemented_only:
@@ -340,3 +341,16 @@ class TorchExpression():
             raise NotImplementedError(f"torch_numeric function of {type(expr)} is not implemented."
                                       f"If you want to use CVXPY's numeric instead, pass"
                                       f"implemented_only=False.")
+
+def get_torch_numeric(expr: Expression) -> callable:
+    """
+    This function returns the torch_numeric function of this atom.
+    It supports creating custom torch_numeric functions for atoms by the user.
+    If the user provides a torch_numeric function for the atom, this function will return it.
+    Otherwise, get the default one provided by this pacjage (from EXPR2TORCH).
+    """
+
+    torch_numeric = getattr(expr, "torch_numeric", None)
+    if torch_numeric:
+        return torch_numeric
+    return EXPR2TORCH.get(type(expr))

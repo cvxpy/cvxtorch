@@ -2,8 +2,8 @@ from enum import Enum
 
 import numpy as np
 import torch
-from scipy.sparse import coo_matrix, issparse
 from cvxpy.expressions.expression import Expression
+from scipy.sparse import coo_matrix, issparse
 
 VAR_TYPE = Enum("VAR_TYPE", "VARIABLE_PARAMETER CONSTANT EXPRESSION")
 

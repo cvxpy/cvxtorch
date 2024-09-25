@@ -5,6 +5,7 @@ from cvxpy.atoms.affine.cumsum import cumsum
 from cvxpy.atoms.affine.diag import diag_mat, diag_vec
 from cvxpy.atoms.affine.hstack import Hstack
 from cvxpy.atoms.affine.imag import imag
+from cvxpy.atoms.affine.index import index
 from cvxpy.atoms.affine.kron import kron
 from cvxpy.atoms.affine.promote import Promote
 from cvxpy.atoms.affine.real import real
@@ -57,6 +58,7 @@ import cvxtorch.torch_numerics.affine.diag_vec as diag_vec_tch
 import cvxtorch.torch_numerics.affine.div_expression as div_expression_tch
 import cvxtorch.torch_numerics.affine.hstack as hstack_tch
 import cvxtorch.torch_numerics.affine.imag as imag_tch
+import cvxtorch.torch_numerics.affine.index as index_tch
 import cvxtorch.torch_numerics.affine.kron as kron_tch
 import cvxtorch.torch_numerics.affine.mul_expression as mul_expression_tch
 import cvxtorch.torch_numerics.affine.multiply as multiply_tch
@@ -138,6 +140,7 @@ EXPR2TORCH = {
     diag_mat: diag_mat_tch.torch_numeric,
     Hstack: hstack_tch.torch_numeric,
     imag: imag_tch.torch_numeric,
+    index: index_tch.torch_numeric,
     kron: kron_tch.torch_numeric,
     NegExpression: unary_operators_tch.torch_numeric,
     Promote: promote_tch.torch_numeric,

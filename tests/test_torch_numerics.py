@@ -69,6 +69,7 @@ class TestTorchNumeric(unittest.TestCase):
 
         assert EXPR2TORCH.get(type(atom)) is not None, f"Atom {atom} has no torch_numeric function."
         #Perform predefined tests
+        print(f"Testing atom {type(atom)}...")
         for i, curr_test in enumerate(tests_flags):
             if not curr_test:
                 continue

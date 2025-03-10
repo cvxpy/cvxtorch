@@ -6,7 +6,10 @@ class VariablesDict():
         self.vars_dict = dict()
         for var in provided_vars_list:
             self.add_var(var)
-            
+    
+    def __len__(self) -> int:
+        return len(self.vars_dict)
+
     def add_var(self, var):
         """
         var is expected to be either a cp.Variable or a cp.Parameter, but is not enforced.

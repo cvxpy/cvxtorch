@@ -3,7 +3,7 @@ import unittest
 import cvxpy as cp
 import numpy as np
 import torch
-from cvxpy.constraints.nonpos import NonNeg, NonPos
+from cvxpy.constraints.nonpos import NonNeg
 from cvxpy.constraints.zero import Zero
 
 from cvxtorch.torch_expression import TorchExpression

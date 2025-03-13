@@ -8,7 +8,8 @@ def torch_numeric(expr: Expression, values: list[torch.Tensor]) -> torch.Tensor:
     if expr.args[0].is_complex():
         # Use permute instead of .T to avoid the deprecation warning
         ndim = X.ndim
-        product = (torch.conj(X)).permute(*torch.arange(ndim - 1, -1, -1)) @ (torch.linalg.inv(P)) @ X
+        conj_x_perm = (torch.conj(X)).permute(*torch.arange(ndim - 1, -1, -1))
+        product = conj_x_perm @ (torch.linalg.inv(P)) @ X
     else:
         # Use permute instead of .T to avoid the deprecation warning
         ndim = X.ndim

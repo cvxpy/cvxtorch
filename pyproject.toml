@@ -20,6 +20,10 @@ target-version = "py39"
 testpaths = [
     "/tests/"
 ]
+filterwarnings = [
+    "ignore::RuntimeWarning:cvxpy.*",
+    "ignore::FutureWarning:cvxpy.*"
+]
 
 
 [project]
@@ -27,7 +31,7 @@ name = "cvxtorch"
 description = "A CVXPY to Pytorch Expression converter."
 dependencies = [
     "cvxpy",
-    "numpy < 2.0.0",
+    "numpy",
     "scipy >= 1.1.0",
     "torch",
 ]

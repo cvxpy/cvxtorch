@@ -170,7 +170,7 @@ class TestGenTorchExpAdvanced(unittest.TestCase):
         test4  = torch_exp4(self.t1, self.t2)
         test5  = torch_exp5(self.t1, self.t2)
         test6  = torch_exp6(self.T1, self.T2)
-        test7  = torch_exp7(torch.tensor(self.t1), torch.tensor(self.t2))
+        test7  = torch_exp7(self.t1.clone().detach(), self.t2.clone().detach())
         test8  = torch_exp8(self.t1)
         test9  = torch_exp9(self.t1)
         test10 = torch_exp10()
@@ -183,7 +183,7 @@ class TestGenTorchExpAdvanced(unittest.TestCase):
         #Variables and parameters are treated similarly
         self.assertTrue(all(np.isclose(test4, test5))) 
         self.assertTrue((test6==self.n*torch.ones((self.m,self.m))).all())
-        self.assertTrue(torch.all(test7==torch.tensor(self.t1)@(3*torch.tensor(self.t2))).item())
+        self.assertTrue(torch.all(test7==self.t1@(3*self.t2)).item())
         self.assertTrue(torch.all(self.t1==test8))
         self.assertTrue(torch.all(self.t1==test9))
         self.assertTrue(torch.all(test10==self.n).item())
@@ -202,11 +202,17 @@ class TestSpecialConstraints(unittest.TestCase):
         self.exp2 = self.a*self.x + self.b*self.y + self.c
         self.t1 = torch.randn(self.n)
         self.t2 = torch.randn(self.n)
-        self.t2_exp = (self.a*self.t1+self.b*self.t2+self.c.value).float()
+        # Convert all components to tensors first to avoid NumPy 2.0 deprecation warnings
+        c_tensor = torch.tensor(self.c.value, dtype=self.t1.dtype, device=self.t1.device)
+        # Perform all operations using PyTorch tensors
+        expr_result = self.a * self.t1 + self.b * self.t2 + c_tensor
+        # Convert to float32
+        self.t2_exp = expr_result.to(dtype=torch.float32)
     
     def test_nonpos(self) -> None:
-        tch_exp1 = TorchExpression(NonPos(self.exp1)).torch_expression
-        tch_exp2 = TorchExpression(NonPos(self.exp2), dtype=torch.float32).torch_expression
+        # Using operator overloading instead of explicit NonPos constructor
+        tch_exp1 = TorchExpression(self.exp1 <= 0).torch_expression
+        tch_exp2 = TorchExpression(self.exp2 <= 0, dtype=torch.float32).torch_expression
 
         test1 = tch_exp1(self.t1)
         test2 = tch_exp2(self.t1, self.t2)

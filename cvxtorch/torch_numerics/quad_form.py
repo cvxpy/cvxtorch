@@ -12,7 +12,11 @@ def torch_numeric(expr: Expression, values: list[torch.Tensor]) -> torch.Tensor:
         return x*prod
     prod = values[1] @ (values[0])
     if expr.args[0].is_complex():
-        quad = multiply(torch.conj(values[0]).T, prod)
+        # Use permute instead of .T to avoid the deprecation warning
+        ndim = values[0].ndim
+        quad = multiply(torch.conj(values[0]).permute(*torch.arange(ndim - 1, -1, -1)), prod)
     else:
-        quad = multiply(values[0].T, prod)
+        # Use permute instead of .T to avoid the deprecation warning
+        ndim = values[0].ndim
+        quad = multiply(values[0].permute(*torch.arange(ndim - 1, -1, -1)), prod)
     return torch.real(quad)

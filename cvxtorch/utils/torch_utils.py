@@ -29,7 +29,8 @@ def tensor_reshape_fortran(value: torch.Tensor, shape: tuple) -> torch.Tensor:
     # return torch.reshape(value.reshape(reverse_shape).t(), shape=shape)
     # A more compact solution based on
     # https://stackoverflow.com/questions/64433896/pytorch-equivalent-of-numpy-reshape-function.
-    return torch.reshape(value.T, shape[::-1]).T
+    return torch.reshape(value.permute(*torch.arange(value.ndim - 1, -1, -1)),
+                            shape[::-1]).permute(*torch.arange(value.ndim - 1, -1, -1))
 
 
 def get_torch_numeric(expr: Expression) -> callable:

@@ -35,8 +35,9 @@ def tensor_reshape_fortran(value: torch.Tensor, shape: tuple) -> torch.Tensor:
     # return torch.reshape(value.reshape(reverse_shape).t(), shape=shape)
     # A more compact solution based on
     # https://stackoverflow.com/questions/64433896/pytorch-equivalent-of-numpy-reshape-function.
+
     if value.ndim<=1:
-        return value
+        return torch.reshape(value, shape[::-1]).T
     elif value.ndim==2: #Can only transpose 2D tensors
         return torch.reshape(value.T, shape[::-1]).T
     return reverse_high_dimension_tensor(torch.reshape(reverse_high_dimension_tensor(value),

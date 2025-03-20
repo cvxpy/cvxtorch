@@ -29,6 +29,7 @@ filterwarnings = [
 
 [project]
 name = "cvxtorch"
+version = "0.1.0"
 description = "A CVXPY to Pytorch Expression converter."
 dependencies = [
     "cvxpy",

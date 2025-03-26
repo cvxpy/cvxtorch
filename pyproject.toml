@@ -1,4 +1,8 @@
 [tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
 select = [
     "E",
     "F",
@@ -6,33 +10,34 @@ select = [
     "NPY201",
     "W605",  # Check for invalid escape sequences in docstrings (errors in py >= 3.11)
 ]
-line-length = 100
 exclude = [
     "examples",
     "doc",
     "*__init__.py"
 ]
-# The minimum Python version that should be supported
-target-version = "py39"
 
 
 [tool.pytest.ini_options]
 testpaths = [
     "/tests/"
 ]
+filterwarnings = [
+    "ignore::RuntimeWarning:cvxpy.*",
+    "ignore::FutureWarning:cvxpy.*"
+]
 
 
 [project]
 name = "cvxtorch"
+version = "0.1.0"
 description = "A CVXPY to Pytorch Expression converter."
 dependencies = [
     "cvxpy",
-    "numpy < 2.0.0",
+    "numpy",
     "scipy >= 1.1.0",
     "torch",
 ]
 requires-python = ">=3.9"
-dynamic = ["version"]
 
 [project.readme]
 file = "README.md"

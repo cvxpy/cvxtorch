@@ -24,7 +24,7 @@ def gen_tensor(value, dtype=torch.float64) -> torch.Tensor:
     inds = np.vstack((value_coo.row, value_coo.col))
     i = torch.LongTensor(inds)
     v = torch.FloatTensor(vals)
-    return torch.sparse.FloatTensor(i, v, torch.Size(value_coo.shape)).to(dtype)
+    return torch.sparse_coo_tensor(i, v, torch.Size(value_coo.shape), dtype=dtype, device=v.device)
 
 
 def tensor_reshape_fortran(value: torch.Tensor, shape: tuple) -> torch.Tensor:

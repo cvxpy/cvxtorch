@@ -27,6 +27,14 @@ def gen_tensor(value, dtype=torch.float64) -> torch.Tensor:
     return torch.sparse_coo_tensor(i, v, torch.Size(value_coo.shape), dtype=dtype, device=v.device)
 
 
+def transpose_if_2D(value: torch.Tensor) -> torch.Tensor:
+    """
+    This helper function transposes value if it is a 2D matrix. Does nothing otherwise.
+    """
+    if value.ndim==2:
+        value = value.T
+    return value
+
 def tensor_reshape_fortran(value: torch.Tensor, shape: tuple) -> torch.Tensor:
     """This function reshapes a tensor in Fortran order (similar to numpy.reshape with order="F").
     This functionality is not included in Pytorch."""
@@ -36,13 +44,10 @@ def tensor_reshape_fortran(value: torch.Tensor, shape: tuple) -> torch.Tensor:
     # A more compact solution based on
     # https://stackoverflow.com/questions/64433896/pytorch-equivalent-of-numpy-reshape-function.
 
-    if value.ndim<=1:
+    if value.ndim<=2:
+        value = transpose_if_2D(value)
         res = torch.reshape(value, shape[::-1])
-        if res.ndim==2:
-            res = res.T
-        return res
-    elif value.ndim==2: #Can only transpose 2D tensors
-        return torch.reshape(value.T, shape[::-1]).T
+        return transpose_if_2D(res)
     return reverse_high_dimension_tensor(torch.reshape(reverse_high_dimension_tensor(value),
                                                         shape[::-1]))
 

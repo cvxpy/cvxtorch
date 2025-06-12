@@ -1,5 +1,6 @@
 import cvxpy as cp
 import torch
+
 from cvxtorch import TorchExpression
 
 n = 5

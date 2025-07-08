@@ -161,3 +161,17 @@ EXPR2TORCH = {
     power: power_tch.torch_numeric,
     xexp: xexp_tch.torch_numeric,
 }
+
+try:
+    # Atoms from cvxpy-ipopt
+    from cvxpy.atoms.elementwise.trig import cos, sin
+
+    from cvxtorch.torch_numerics.elementwise.trig import cos as cos_tch, sin as sin_tch
+    EXPR2TORCH.extend({
+        sin: sin_tch.torch_numeric,
+        cos: cos_tch.torch_numeric,
+    })
+except ImportError:
+    pass
+
+
